@@ -1,0 +1,120 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+\usepackage{enumitem}
+
+\title{Logic Assignment-1 Report}
+\author{Shishir Vuppala(24b0973), Aaditya Kumar(24b0975)}
+\date{August 2025}
+
+\begin{document}
+
+\maketitle
+\section*{Question 1 - Sudoku Solver}
+
+We must encode the rules of sudoku into a propositional rules, and then the SAT Solver will be able to find us a valid assignment which can then be converted into the answer by decoding it.
+
+\subsection*{Variable Encoding}
+We introduce propositional variables of the form
+\[ p_{i,j,n} = \text{cell in $i^{th}$ row and $j^{th}$ column contains the number $n$} \]
+where \begin{itemize}
+    \item $i \in \{ 0,1 \ldots8 \}$
+    \item $j \in \{ 0,1 \ldots 8 \}$
+    \item $n \in \{ 1,2 \ldots 9 \}$
+\end{itemize}
+The variable assignment is implemented within the code using:
+\begin{center}
+\texttt{var\_generator($i,j,n$) = $90 \cdot i+10 \cdot j+n$}
+\end{center}
+This variable assignment gives a unique ID for each possible tuple of $(i,j,n)$.
+\subsection*{Approach Overview}
+The rules required for the game of sudoku are:-
+\begin{enumerate}
+    \item Each cell should have exactly 1 number.
+    \item Each row should have one of each number from 1 to 9.
+    \item Each column should have one of each number from 1 to 9.
+    \item Each subbox should have one of each number from 1 to 9.
+\end{enumerate}
+Apart from these we also have to encode in the original conditions of the whichever sudoku we have. \\
+So we generate the following clauses for each of the rules:-
+\begin{description}
+    \item[Cell Constraints: ]
+    This is encoded in two parts
+    \begin{description}
+        \item[Atleast one number per cell: ] In the cell at $i^{th}$ row and $j^{th}$ column \[ p_{i,j,1} \vee p_{i,j,2} \ldots p_{i,j,9} \ \]
+        \item[At most one number per cell: ] In the cell at $i^{th}$ row and $j^{th}$ column, for all $n_1 \ne n_2$  \[ \neg p_{i,j,n_1} \vee \neg p_{i,j,n_2} \]
+    \end{description}
+    \item[Row Constraint: ] Each row needs to have exactly one of each number. So for each number $n$ and for a row $i$, 
+    \[ p_{i,0,n} \vee p_{i,1,n} \ldots p_{i,8,n} \]
+    \item[Column Constraint: ] Each column needs to have exactly one of each number. So for each number $n$ and for a column $j$, 
+    \[ p_{0,j,n} \vee p_{1,j,n} \ldots p_{8,j,n} \]
+    \item[Subbox constraint: ] Each 3x3 subbox needs to have exactly one of each number. So for a number $n$ and for the subbox with position ($p,s$)
+    \[
+     (\bigvee_{r,s \in \{1,2,3 \}} p_{3p+r,3q+s,n})
+    \]
+    \item[Initial Conditions: ] In the sudoku we need to solve, if the cell in $i^{th}$ row and $j^{th}$ column has the number $n$. Then,
+    \[ (p_{i,j,n}) \]
+    should be added as a clause
+\end{description}
+\subsection*{Decoding}
+There will be exactly 81 propositional variables that are true in the final satisfying assignment each corresponding to a number in a particular cell. So we get the encoded number for each of them and we perform.
+\begin{center}
+    \texttt{i = (element//90)} \\
+    \texttt{j = (element//10)\%9} \\
+    \texttt{n = element\%10}
+\end{center}
+then within the grid at the $i^{th}$ row and $j^{th}$ column we place the number $n$.
+\section*{Question 2 - Sokoban Solver}
+
+We must encode the rules of sokoban into propositional clauses, and then the SAT Solver will be able to find us a valid assignment which can then be converted into the answer by decoding it. Unlike Sudoku which has obvious conditions, to translate the rules of the game into the required propositional clauses takes longer
+\subsection*{Variable Encoding}
+We introduce propositional variables of the form
+\[ p_{x,y,t} = \text{player is at cell (x,y) at time =$t$} \]
+\[ b_{b,x,y,t} = \text{box $b$ is at cell (i,j) at time $t$} \]
+where 
+\begin{itemize}
+    \item $x \in \{ 0,1 \ldots8 \}$
+    \item $y \in \{ 0,1 \ldots 8 \}$
+    \item $t \in \{ 1,2 \ldots 9 \}$
+    \item $b \in \{0,1 \ldots B-1 \}$
+\end{itemize}
+Here, B is total number of boxes.
+The variable assignment is implemented within the code using:
+\begin{center}
+\texttt{var\_player($x,y,t$) = $1000 \cdot t + 21 \cdot y + x$} \\
+\texttt{var\_box($b,x,y,t$) = $100000\cdot(b+1) + 1000 \cdot t + 21 \cdot y + x$}
+\end{center}
+This variable assignment gives a unique ID for each possible tuple of $(x,y,t)$ and $(b,x,y,t)$.
+\subsection*{Approach Overview}
+The rules/conditions we encoded for the game of sokoban are:-
+\begin{enumerate}
+    \item Player should be at exactly one position at any particular time $t$.
+    \item Any box should be at only one position at any particular time $t$.
+    \item Player and walls cannot be at the same position at any particular time $t$.
+    \item Boxes and walls cannot be at the same position at any particular time $t$.
+    \item Player and boxes cannot be at the same position at any particular time $t$.
+    \item Boxes and other boxes cannot occupy the same position at any particular time $t$.
+    \item If the player is at ($x,y$) at time $t$, then at the next time $t+1$, he can be at (x+1,y) or (x-1,y) or (x,y+1) or (x,y-1).
+    \item If any box b is at ($x,y$) at time $t$, and the player moves to ($x,y$) at time $t+1$ then box should move in the same direction that the player moved as long as its possible.
+    \item If any box b is at ($x,y$) at time $t$, and the player DOES NOT move to ($x,y$) at time $t+1$, then the box should remain in the same place at time = $t+1$.
+    \item At the final time T, all the boxes should be on goal states.
+\end{enumerate}
+Apart from these, we also have to encode the original conditions of the game. Thus, we need to encode the original position of the boxes and player as well as read the grid and find all the locations of the walls and goals. \\
+So we generate the following clauses,
+
+\subsection*{Decoding}
+Since we only care about the moves that were done we only need to worry about the player's position. for every time t there will be one position where the player is located. \\
+So we can say that 
+
+
+\section*{Distribution of Workload}
+\subsection*{Question 1}
+Both Aaditya and I thought of the logic and coded it up indepedently. Our codes were of similar speed, and we worked equally on this problem.
+\subsection*{Question 2}
+Aaditya and I discussed the problem together to come with the logic of how exactly to model this problem. Then I was the one to code it up on my laptop. Finally Aaditya went through the code and wrote up some custom testcases to debug the code properly.
+\subsection*{Question 3}
+I thought of the idea of representing each NAND gate as a propositional variable and which inputs enter each gate as propositional variables. After getting this idea, I was the one who coded it up.
+\subsection*{Report}
+I was the one who wrote the report and Aadtya performed any revisions to remove any errors in the latex file.
+
+\end{document}
