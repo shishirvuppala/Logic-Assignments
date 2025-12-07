@@ -245,7 +245,7 @@ def decode(model, encoder):
     
     for x in range(1,M+1):
         for y in range(1,N+1):
-            index = y*100 + x
+            index = y*21 + x
             if index in model:
                 lastpos = (x,y)
 
@@ -266,34 +266,34 @@ def decode(model, encoder):
                         moves.append('L')
                     lastpos = (x,y)
 
-    for t in range(T+1):
-        print("at time ",t)
-        for y in range(1,N+1):
-            for x in range(1,M+1):
-                printe = False
-                pindex = t*1000 + y*100 + x
-                if(pindex in model):
-                    print("P",end=" ")
-                    printe = True
-                for b in range(encoder.num_boxes):
-                    bindex = (b+1)*100000+ t*1000 + y*21 + x
-                    if bindex in model:
-                        print("B",end=" ")
-                        printe = True
-                if((x,y) in encoder.walls):
-                    print('#',end=" ")
-                    printe = True
-                elif((x,y) in encoder.goals):
-                    print('G',end=" ")
-                    printe = True
-                if(not printe):
-                   print(".",end=" ")
-            print("") #this was to visualise the grid
-
+    # for t in range(T+1):
+    #     print("at time ",t)
+    #     for y in range(1,N+1):
+    #         for x in range(1,M+1):
+    #             printe = False
+    #             pindex = t*1000 + y*100 + x
+    #             if(pindex in model):
+    #                 print("P",end=" ")
+    #                 printe = True
+    #             for b in range(encoder.num_boxes):
+    #                 bindex = (b+1)*100000+ t*1000 + y*21 + x
+    #                 if bindex in model:
+    #                     print("B",end=" ")
+    #                     printe = True
+    #             if((x,y) in encoder.walls):
+    #                 print('#',end=" ")
+    #                 printe = True
+    #             elif((x,y) in encoder.goals):
+    #                 print('G',end=" ")
+    #                 printe = True
+    #             if(not printe):
+    #                print(".",end=" ")
+    #         print("") 
+    # 
+    # #this was to visualise the grid
 
     return moves
     # TODO: Map player positions at each timestep to movement directions
-    pass
 
 
 def solve_sokoban(grid, T):
